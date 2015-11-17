@@ -227,12 +227,19 @@ Return group tag of agent at r, c."
       (agent-tag agent))))
 
 "-----------------------------------add new function-------------------"
-(defun agent-parent (r c)
+(defun agent-parents (r c)
   "(r c)
 Return parent of agent at r, c"
   (let ((agent (aref *torus* r c)))
     (unless (null agent)
       (agent-parent agent))))
+
+(defun agent-ids (r c)
+  "(r c)
+return the id of agent"
+  (let ((agent (aref *torus* r c)))
+    (unless (null agent)
+      (agent-id agent))))
 
 (defun same-tag? (agent1-r agent1-c agent2-r agent2-c)
   "(agent1-r agent1-c agent2-r agent2-c)
@@ -244,8 +251,9 @@ Do 2 agents, defined by their r & c, have the same tag?"
 (defun relative? (agent1-r agent1-c agent2-r agent2-c)
   "(agent1-r agent1-c agent2-r agent2-c)
 Do 2 agents, defined by their r and c, have the same parent"
-  (= (agent-parent agent1-r agent1-c)
-     (agent-parent agent2-r agent2-c)))
+  (or (= (agent-parents agent1-r agent1-c) (agent-parents agent2-r agent2-c))
+      (= (agent-parents agent1-r agent1-c) (agent-ids agent2-r agent2-c))
+      (= (agent-parents agent2-r agent2-c) (agent-ids agent1-r agent1-c))))
 
 "-------------------if they are relatives, they will always cooperate------------------"
 (defun donate? (igs ogs same-group? relative?)
@@ -290,10 +298,11 @@ Else increment ptr by *benefit*."
 Play out interaction between potential doner & potential recipient.
 Same group tag? If donate then update ptrs."
   (let* ((same-tag (same-tag? doner-r doner-c recipient-r recipient-c))
+         (relative (relative? doner-r doner-c recipient-r recipient-c))
          (agent (aref *torus* doner-r doner-c))
          (igs (agent-igs agent))
          (ogs (agent-ogs agent))
-         (donate (donate? igs ogs same-tag)))
+         (donate (donate? igs ogs same-tag relative)))
     (if donate
         (progn
           (update-ptr doner-r doner-c 'cost)
@@ -377,6 +386,7 @@ Find empty neighbors of agent at location r, c."
                       empty)))
         ((null ns) (reverse empty)))))
 
+"-------------------------------------extension to make it agents have parents property--------------"
 (defun clone (r c)
   "(r c)
 Clone agent at r, c to an empty neighboring location, if any, after possible mutations."
@@ -384,7 +394,7 @@ Clone agent at r, c to an empty neighboring location, if any, after possible mut
          (tag (agent-tag agent))
          (igs (agent-igs agent))
          (ogs (agent-ogs agent))
-         (parent (agent-parent agent))
+         (parent (agent-id agent))
          (id *idtrack*)
          (possible-locations (empty-neighbors r c))
          (clone-location (if possible-locations
@@ -856,7 +866,7 @@ Run ncycles & record strategies for every cycle for nruns.
 Test significance of dominant strategy. 
 overall is critical value for overall x^2. 
 top2 is critical value for most frequent vs next most frequent x^2."
-  (setq *path* "f:\\documents and settings\\tom\\my documents\\courses\\315\\09\\ethnocentrism\\results\\")
+  (setq *path* "~/desktop/Ethocentrism/results")
   (seed-random)
   (set-parameters ntags nstrategies cost benefit base-ptr mutation-rate death-rate immigration-rate)
   (list-parameters)
@@ -875,7 +885,7 @@ top2 is critical value for most frequent vs next most frequent x^2."
                           (benefit 0.03) (base-ptr 0.12) (mutation-rate 0.005) 
                           (death-rate 0.10) (immigration-rate 1))
 Run ncycles & plot every nth cycle for torus of size."
-  (setq *path* "f:\\documents and settings\\tom\\my documents\\courses\\315\\09\\ethnocentrism\\results\\")
+  (setq *path* "~/desktop/Ethocentrism/results")
   (seed-random)
   (set-parameters ntags nstrategies cost benefit base-ptr mutation-rate death-rate immigration-rate)
   (initialize-torus size)
