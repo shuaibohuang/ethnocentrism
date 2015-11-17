@@ -1,11 +1,15 @@
 ;;;file: ethnocentrism8-1.cl
 ;;;purpose: Hammond & Axelrod 2006 agent-based evolutionary model
-;;;programmer: Tom Shultz
+;;;programmer: Shuaibo Huang
 ;;;started: 31 aug 07
 ;;;current: 17 nov 10
 ;;;fixed possible divide-by-0 errors in proportion-of4-strategies & proportions-behaviors
 
 ;;;globals
+
+"---------------add global var idtrack------------------------"
+(defvar *idtrack* 0
+  "Track id for agents to ensure the uniquness")
 
 (defvar *path* nil
   "Path for saving files.")
@@ -58,9 +62,12 @@
 (defvar *behavior-proportions* nil
   "List of behavior proportions for each run.")
 
+"-----------------------------------add Parent id and parent as new traits---------------------------- "
 (defstruct agent 
   "tag is group id, igs is ingroup-strategy, ogs is outgroup-strategy, ptr is potential to reproduce.
- Strategies are 0 = defect or 1 = cooperate."
+ Strategies are 0 = defect or 1 = cooperate, id denotes the unique identity of a agent, and parent is its parent."
+  id
+  parent
   tag
   igs
   ogs
@@ -128,9 +135,11 @@ Find random empty location in torus."
 (defun immigrant ()
   "()
 Make 1 immigrant with random characteristics."
-  (let* ((tag (random *ntags*))
+  (let* ((id *idtrack*)
+         (tag (random *ntags*))
          (igs (random 2))
          (ogs (random 2))
+         (parent nil)
          (location (empty-location))
          (row (first location))
          (column (second location)))
@@ -138,7 +147,10 @@ Make 1 immigrant with random characteristics."
       (make-agent :tag tag
                   :igs igs
                   :ogs ogs
-                  :ptr *base-ptr*))))
+                  :ptr *base-ptr*
+                  :parent parent
+                  :id id)))
+  (setf *idtrack* (1+ *idtrack*)))
 
 (defun immigrate ()
   "()
@@ -213,6 +225,9 @@ Return group tag of agent at r, c."
   (let ((agent (aref *torus* r c)))
     (unless (null agent)
       (agent-tag agent))))
+(defun agent-parent (r c)
+  "(r c)
+Return parent of agent at r, c")
 
 (defun same-tag? (agent1-r agent1-c agent2-r agent2-c)
   "(agent1-r agent1-c agent2-r agent2-c)
@@ -768,7 +783,7 @@ Run ncycles & analyze last lastn cycles for run n for torus of size."
   "(ncycles lastn nruns &optional (size 50) (ntags 4) (nstrategies 2) (cost 0.01) (benefit 0.03) 
                     (base-ptr 0.12) (mutation-rate 0.005) (death-rate 0.10) (immigration-rate 1))
 Run ncycles & analyze last lastn cycles for nruns & other optional parameters."
-  (setq *path* "f:\\documents and settings\\tom\\my documents\\courses\\315\\09\\ethnocentrism\\results\\")
+  (setq *path* "~/desktop/Ethocentrism/results")
   (seed-random)
   (set-parameters ntags nstrategies cost benefit base-ptr mutation-rate death-rate immigration-rate)
   (setf *strategies* nil
