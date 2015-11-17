@@ -148,7 +148,7 @@ Make 1 immigrant with random characteristics."
                   :igs igs
                   :ogs ogs
                   :ptr *base-ptr*
-                  :parent parent
+                  :parent id
                   :id id)))
   (setf *idtrack* (1+ *idtrack*)))
 
@@ -384,6 +384,8 @@ Clone agent at r, c to an empty neighboring location, if any, after possible mut
          (tag (agent-tag agent))
          (igs (agent-igs agent))
          (ogs (agent-ogs agent))
+         (parent (agent-parent agent))
+         (id *idtrack*)
          (possible-locations (empty-neighbors r c))
          (clone-location (if possible-locations
                              (nth 
@@ -399,7 +401,10 @@ Clone agent at r, c to an empty neighboring location, if any, after possible mut
          (make-agent :tag tag
                      :igs igs
                      :ogs ogs
-                     :ptr *base-ptr*)))))
+                     :id id
+                     :parent parent
+                     :ptr *base-ptr*))))
+  (setf *idtrack* (1+ *idtrack*)))
 
 (defun reproduce (r c)
   "(r c)
