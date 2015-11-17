@@ -225,9 +225,14 @@ Return group tag of agent at r, c."
   (let ((agent (aref *torus* r c)))
     (unless (null agent)
       (agent-tag agent))))
+
+"-----------------------------------add new function-------------------"
 (defun agent-parent (r c)
   "(r c)
-Return parent of agent at r, c")
+Return parent of agent at r, c"
+  (let ((agent (aref *torus* r c)))
+    (unless (null agent)
+      (agent-parent agent))))
 
 (defun same-tag? (agent1-r agent1-c agent2-r agent2-c)
   "(agent1-r agent1-c agent2-r agent2-c)
@@ -235,16 +240,26 @@ Do 2 agents, defined by their r & c, have the same tag?"
   (= (agent-group agent1-r agent1-c)
      (agent-group agent2-r agent2-c)))
 
-(defun donate? (igs ogs same-group?)
+"-------------------------add new fucntion-------------------------------"
+(defun relative? (agent1-r agent1-c agent2-r agent2-c)
+  "(agent1-r agent1-c agent2-r agent2-c)
+Do 2 agents, defined by their r and c, have the same parent"
+  (= (agent-parent agent1-r agent1-c)
+     (agent-parent agent2-r agent2-c)))
+
+"-------------------if they are relatives, they will always cooperate------------------"
+(defun donate? (igs ogs same-group? relative?)
   "(igs ogs same-group?)
 Does potential donor donate?
 If donor & recipient are in same group, then if donor cooperates in group, donor cooperates.
 If donor & recipient are in different groups, then if donor cooperates out of group, donor cooperates."
-  (if same-group?
+  (if relative? 
+      t
+    (if same-group?
       (if (= igs 1)
           t)
-    (if (= ogs 1)
-        t)))
+      (if (= ogs 1)
+          t))))
 
 ;;;(donate? 0 0 t) -> nil
 ;;;(donate? 0 1 t) -> nil
